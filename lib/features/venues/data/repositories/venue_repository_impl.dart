@@ -11,23 +11,27 @@ class VenueRepositoryImpl implements VenueRepository {
 
   VenueRepositoryImpl({required this.venueRemoteDataSource, required this.networkInfo});
 
-  @override
-  Future<VenueEntity> getVenueById(String id) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final venueDTO = await venueRemoteDataSource.getVenueById(id);
-        return venueDTO.toEntity();
-      } on ServerException catch (e) {
-        throw ServerFailure(message: e.message, statusCode: e.statusCode);
-      } on NetworkException catch (e) {
-        throw NetworkFailure(message: e.message);
-      } on UnknownException catch (e) {
-        throw UnknownFailure(message: e.message);
-      }
-    } else {
+  Future<T> _safeApiCall<T>(Future<T> Function() apiCall) async {
+    if (!await networkInfo.isConnected) {
       throw NetworkFailure(message: 'No internet connection');
     }
+
+    try {
+      return await apiCall();
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message, statusCode: e.statusCode);
+    } on NetworkException catch (e) {
+      throw NetworkFailure(message: e.message);
+    } on UnknownException catch (e) {
+      throw UnknownFailure(message: e.message);
+    }
   }
+
+  @override
+  Future<VenueEntity> getVenueById(String id) => _safeApiCall(() async {
+    final venueDTO = await venueRemoteDataSource.getVenueById(id);
+    return venueDTO.toEntity();
+  });
 
   @override
   Future<List<VenueEntity>> getVenues({
@@ -36,26 +40,14 @@ class VenueRepositoryImpl implements VenueRepository {
     String category = '',
     String search = '',
     List<String> facilities = const [],
-  }) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final venueDTOs = await venueRemoteDataSource.getVenues(
-          page: page,
-          limit: limit,
-          category: category,
-          search: search,
-          facilities: facilities,
-        );
-        return venueDTOs.map((dto) => dto.toEntity()).toList();
-      } on ServerException catch (e) {
-        throw ServerFailure(message: e.message, statusCode: e.statusCode);
-      } on NetworkException catch (e) {
-        throw NetworkFailure(message: e.message);
-      } on UnknownException catch (e) {
-        throw UnknownFailure(message: e.message);
-      }
-    } else {
-      throw NetworkFailure(message: 'No internet connection');
-    }
-  }
+  }) => _safeApiCall(() async {
+    final venueDTOs = await venueRemoteDataSource.getVenues(
+      page: page,
+      limit: limit,
+      category: category,
+      search: search,
+      facilities: facilities,
+    );
+    return venueDTOs.map((dto) => dto.toEntity()).toList();
+  });
 }

@@ -30,8 +30,48 @@ class VenuesBloc extends Bloc<VenuesEvent, VenuesState> {
     on<VenuesFetchByFacilitiesEvent>(_onVenuesFetchByFacilitiesEvent);
   }
 
+  Future<List<VenueEntity>> _fetchVenuesWithFilters() async {
+    final allFacilities = [..._selectedFacilities, ..._selectedFamilyAccess, ..._selectedGuestAccess];
+
+    return venueRepository.getVenues(
+      page: _currentPage,
+      limit: _pageSize,
+      category: _selectedCategory,
+      search: _searchQuery,
+      facilities: allFacilities,
+    );
+  }
+
+  void _updateMetadataFromResults(List<VenueEntity> venues) {
+    if (venues.length < _pageSize) {
+      _hasReachedMax = true;
+      _totalPages = _currentPage;
+    } else {
+      _totalPages = _currentPage + 1;
+      _hasReachedMax = false;
+    }
+
+    _allVenues.sort(
+      (a, b) => _sortOrder == 'asc' ? a.createdAt.compareTo(b.createdAt) : b.createdAt.compareTo(a.createdAt),
+    );
+  }
+
+  VenuesLoaded _createLoadedState() => VenuesLoaded(
+    venues: _allVenues,
+    totalPages: _totalPages,
+    currentPage: _currentPage,
+    hasReachedMax: _hasReachedMax,
+    searchQuery: _searchQuery,
+    selectedCategory: _selectedCategory,
+    sortOrder: _sortOrder,
+    selectedFacilities: _selectedFacilities,
+    selectedFamilyAccess: _selectedFamilyAccess,
+    selectedGuestAccess: _selectedGuestAccess,
+  );
+
   Future<void> _onVenuesFetchEvent(VenuesFetchEvent event, Emitter<VenuesState> emit) async {
     emit(VenuesLoading());
+
     try {
       _currentPage = 1;
       _hasReachedMax = false;
@@ -42,39 +82,9 @@ class VenuesBloc extends Bloc<VenuesEvent, VenuesState> {
         _selectedGuestAccess = [];
       }
 
-      _allVenues = await venueRepository.getVenues(
-        page: _currentPage,
-        limit: _pageSize,
-        category: _selectedCategory,
-        search: _searchQuery,
-        facilities: _selectedFacilities,
-      );
-
-      if (_allVenues.length < _pageSize) {
-        _hasReachedMax = true;
-        _totalPages = 1;
-      } else {
-        _totalPages = 2;
-      }
-
-      _allVenues.sort(
-        (a, b) => _sortOrder == 'asc' ? a.createdAt.compareTo(b.createdAt) : b.createdAt.compareTo(a.createdAt),
-      );
-
-      emit(
-        VenuesLoaded(
-          venues: _allVenues,
-          totalPages: _totalPages,
-          currentPage: _currentPage,
-          hasReachedMax: _hasReachedMax,
-          searchQuery: _searchQuery,
-          selectedCategory: _selectedCategory,
-          sortOrder: _sortOrder,
-          selectedFacilities: _selectedFacilities,
-          selectedFamilyAccess: _selectedFamilyAccess,
-          selectedGuestAccess: _selectedGuestAccess,
-        ),
-      );
+      _allVenues = await _fetchVenuesWithFilters();
+      _updateMetadataFromResults(_allVenues);
+      emit(_createLoadedState());
     } catch (e) {
       emit(VenuesError(message: e.toString()));
     }
@@ -99,14 +109,7 @@ class VenuesBloc extends Bloc<VenuesEvent, VenuesState> {
 
       try {
         _currentPage = event.page;
-
-        final newVenues = await venueRepository.getVenues(
-          page: _currentPage,
-          limit: _pageSize,
-          category: _selectedCategory,
-          search: _searchQuery,
-          facilities: _selectedFacilities,
-        );
+        final newVenues = await _fetchVenuesWithFilters();
 
         if (newVenues.isEmpty) {
           _hasReachedMax = true;
@@ -128,33 +131,8 @@ class VenuesBloc extends Bloc<VenuesEvent, VenuesState> {
         }
 
         _allVenues.addAll(newVenues);
-
-        if (newVenues.length < _pageSize) {
-          _hasReachedMax = true;
-          _totalPages = _currentPage;
-        } else {
-          _totalPages = _currentPage + 1;
-          _hasReachedMax = false;
-        }
-
-        _allVenues.sort(
-          (a, b) => _sortOrder == 'asc' ? a.createdAt.compareTo(b.createdAt) : b.createdAt.compareTo(a.createdAt),
-        );
-
-        emit(
-          VenuesLoaded(
-            venues: _allVenues,
-            totalPages: _totalPages,
-            currentPage: _currentPage,
-            hasReachedMax: _hasReachedMax,
-            searchQuery: _searchQuery,
-            selectedCategory: _selectedCategory,
-            sortOrder: _sortOrder,
-            selectedFacilities: _selectedFacilities,
-            selectedFamilyAccess: _selectedFamilyAccess,
-            selectedGuestAccess: _selectedGuestAccess,
-          ),
-        );
+        _updateMetadataFromResults(newVenues);
+        emit(_createLoadedState());
       } catch (e) {
         emit(VenuesError(message: e.toString()));
       }
@@ -168,39 +146,9 @@ class VenuesBloc extends Bloc<VenuesEvent, VenuesState> {
     emit(VenuesLoading());
 
     try {
-      _allVenues = await venueRepository.getVenues(
-        page: _currentPage,
-        limit: _pageSize,
-        category: _selectedCategory,
-        search: _searchQuery,
-        facilities: _selectedFacilities,
-      );
-
-      if (_allVenues.length < _pageSize) {
-        _hasReachedMax = true;
-        _totalPages = 1;
-      } else {
-        _totalPages = 2;
-      }
-
-      _allVenues.sort(
-        (a, b) => _sortOrder == 'asc' ? a.createdAt.compareTo(b.createdAt) : b.createdAt.compareTo(a.createdAt),
-      );
-
-      emit(
-        VenuesLoaded(
-          venues: _allVenues,
-          totalPages: _totalPages,
-          currentPage: _currentPage,
-          hasReachedMax: _hasReachedMax,
-          searchQuery: _searchQuery,
-          selectedCategory: _selectedCategory,
-          sortOrder: _sortOrder,
-          selectedFacilities: _selectedFacilities,
-          selectedFamilyAccess: _selectedFamilyAccess,
-          selectedGuestAccess: _selectedGuestAccess,
-        ),
-      );
+      _allVenues = await _fetchVenuesWithFilters();
+      _updateMetadataFromResults(_allVenues);
+      emit(_createLoadedState());
     } catch (e) {
       emit(VenuesError(message: e.toString()));
     }
@@ -212,37 +160,9 @@ class VenuesBloc extends Bloc<VenuesEvent, VenuesState> {
     _hasReachedMax = false;
 
     try {
-      final venues = await venueRepository.getVenues(
-        page: _currentPage,
-        limit: _pageSize,
-        search: _searchQuery,
-        category: _selectedCategory,
-        facilities: _selectedFacilities,
-      );
-
-      _allVenues = venues;
-
-      if (venues.length < _pageSize) {
-        _hasReachedMax = true;
-        _totalPages = 1;
-      } else {
-        _totalPages = 2;
-      }
-
-      emit(
-        VenuesLoaded(
-          venues: venues,
-          totalPages: _totalPages,
-          currentPage: _currentPage,
-          hasReachedMax: _hasReachedMax,
-          searchQuery: _searchQuery,
-          selectedCategory: _selectedCategory,
-          sortOrder: _sortOrder,
-          selectedFacilities: _selectedFacilities,
-          selectedFamilyAccess: _selectedFamilyAccess,
-          selectedGuestAccess: _selectedGuestAccess,
-        ),
-      );
+      _allVenues = await _fetchVenuesWithFilters();
+      _updateMetadataFromResults(_allVenues);
+      emit(_createLoadedState());
     } catch (e) {
       emit(VenuesError(message: e.toString()));
     }
@@ -250,76 +170,33 @@ class VenuesBloc extends Bloc<VenuesEvent, VenuesState> {
 
   void _onVenuesToggleSortOrderEvent(VenuesToggleSortOrderEvent event, Emitter<VenuesState> emit) {
     _sortOrder = _sortOrder == 'asc' ? 'desc' : 'asc';
-
     _allVenues.sort(
       (a, b) => _sortOrder == 'asc' ? a.createdAt.compareTo(b.createdAt) : b.createdAt.compareTo(a.createdAt),
     );
-
-    emit(
-      VenuesLoaded(
-        venues: _allVenues,
-        totalPages: _totalPages,
-        currentPage: _currentPage,
-        hasReachedMax: _hasReachedMax,
-        searchQuery: _searchQuery,
-        selectedCategory: _selectedCategory,
-        sortOrder: _sortOrder,
-        selectedFacilities: _selectedFacilities,
-        selectedFamilyAccess: _selectedFamilyAccess,
-        selectedGuestAccess: _selectedGuestAccess,
-      ),
-    );
+    emit(_createLoadedState());
   }
 
   void _onVenuesFetchByFacilitiesEvent(VenuesFetchByFacilitiesEvent event, Emitter<VenuesState> emit) async {
-    if (event.filterType == 'facilities') {
-      _selectedFacilities = event.facilities;
-    } else if (event.filterType == 'familyAccess') {
-      _selectedFamilyAccess = event.facilities;
-    } else if (event.filterType == 'guestAccess') {
-      _selectedGuestAccess = event.facilities;
+    switch (event.filterType) {
+      case 'facilities':
+        _selectedFacilities = event.facilities;
+        break;
+      case 'familyAccess':
+        _selectedFamilyAccess = event.facilities;
+        break;
+      case 'guestAccess':
+        _selectedGuestAccess = event.facilities;
+        break;
     }
-
-    final List<String> allFacilities = [..._selectedFacilities, ..._selectedFamilyAccess, ..._selectedGuestAccess];
 
     _currentPage = 1;
     _hasReachedMax = false;
     emit(VenuesLoading());
 
     try {
-      _allVenues = await venueRepository.getVenues(
-        page: _currentPage,
-        limit: _pageSize,
-        category: _selectedCategory,
-        search: _searchQuery,
-        facilities: allFacilities,
-      );
-
-      if (_allVenues.length < _pageSize) {
-        _hasReachedMax = true;
-        _totalPages = 1;
-      } else {
-        _totalPages = 2;
-      }
-
-      _allVenues.sort(
-        (a, b) => _sortOrder == 'asc' ? a.createdAt.compareTo(b.createdAt) : b.createdAt.compareTo(a.createdAt),
-      );
-
-      emit(
-        VenuesLoaded(
-          venues: _allVenues,
-          totalPages: _totalPages,
-          currentPage: _currentPage,
-          hasReachedMax: _hasReachedMax,
-          searchQuery: _searchQuery,
-          selectedCategory: _selectedCategory,
-          sortOrder: _sortOrder,
-          selectedFacilities: _selectedFacilities,
-          selectedFamilyAccess: _selectedFamilyAccess,
-          selectedGuestAccess: _selectedGuestAccess,
-        ),
-      );
+      _allVenues = await _fetchVenuesWithFilters();
+      _updateMetadataFromResults(_allVenues);
+      emit(_createLoadedState());
     } catch (e) {
       emit(VenuesError(message: e.toString()));
     }

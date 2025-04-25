@@ -3,7 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hotel_list_app/features/venues/presentation/bloc/venues_bloc.dart';
 import 'package:hotel_list_app/features/venues/presentation/filter_bloc/filter_bloc.dart';
 import 'package:hotel_list_app/features/venues/presentation/filter_bloc/filter_state.dart';
-import 'package:hotel_list_app/features/venues/presentation/widgets/filter_chip_widget.dart';
+
+import 'index.dart';
 
 class FilterChipsRow extends StatelessWidget {
   const FilterChipsRow({super.key});

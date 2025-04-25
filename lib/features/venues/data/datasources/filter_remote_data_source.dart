@@ -10,23 +10,25 @@ abstract class FilterRemoteDataSource {
 class FilterRemoteDataSourceImpl implements FilterRemoteDataSource {
   final APIService apiService;
 
-  FilterRemoteDataSourceImpl({required this.apiService});
+  const FilterRemoteDataSourceImpl({required this.apiService});
 
   @override
   Future<List<FilterDto>> getFilters() async {
     try {
       final response = await apiService.get('/filters');
 
-      final List<dynamic> filtersJson = response.data as List<dynamic>;
-      return filtersJson.map((json) => FilterDto.fromJson(json as Map<String, dynamic>)).toList();
+      return (response.data as List).map((json) => FilterDto.fromJson(json as Map<String, dynamic>)).toList();
     } on DioException catch (e) {
-      if (e.type == DioExceptionType.connectionError ||
-          e.type == DioExceptionType.connectionTimeout ||
-          e.type == DioExceptionType.receiveTimeout ||
-          e.type == DioExceptionType.sendTimeout) {
-        throw NetworkException(message: 'Network error: ${e.message}');
-      }
-      throw ServerException(message: 'Server error: ${e.message}', statusCode: e.response?.statusCode ?? 500);
+      final isConnectionIssue = [
+        DioExceptionType.connectionError,
+        DioExceptionType.connectionTimeout,
+        DioExceptionType.receiveTimeout,
+        DioExceptionType.sendTimeout,
+      ].contains(e.type);
+
+      throw isConnectionIssue
+          ? NetworkException(message: 'Network error: ${e.message}')
+          : ServerException(message: 'Server error: ${e.message}', statusCode: e.response?.statusCode ?? 500);
     } catch (e) {
       throw UnknownException(message: 'Unknown error: $e');
     }

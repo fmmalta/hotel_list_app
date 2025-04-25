@@ -16,6 +16,12 @@ abstract class VenueRemoteDataSource {
 
 class VenueRemoteDataSourceImpl implements VenueRemoteDataSource {
   final APIService apiService;
+  final _networkExceptionTypes = const {
+    DioExceptionType.connectionError,
+    DioExceptionType.connectionTimeout,
+    DioExceptionType.receiveTimeout,
+    DioExceptionType.sendTimeout,
+  };
 
   VenueRemoteDataSourceImpl({required this.apiService});
 
@@ -28,32 +34,19 @@ class VenueRemoteDataSourceImpl implements VenueRemoteDataSource {
     List<String> facilities = const [],
   }) async {
     try {
-      final queryParams = <String, dynamic>{'page': page, 'limit': limit};
-
-      if (category.isNotEmpty) {
-        queryParams['category'] = category;
-      }
-
-      if (search.isNotEmpty) {
-        queryParams['search'] = search;
-      }
-
-      if (facilities.isNotEmpty) {
-        queryParams['facilities'] = facilities.join(',');
-      }
+      final queryParams = <String, dynamic>{
+        'page': page,
+        'limit': limit,
+        if (category.isNotEmpty) 'category': category,
+        if (search.isNotEmpty) 'search': search,
+        if (facilities.isNotEmpty) 'facilities': facilities.join(','),
+      };
 
       final response = await apiService.get('/venues', queryParameters: queryParams);
 
-      final List<dynamic> venuesJson = response.data as List<dynamic>;
-      return venuesJson.map((json) => VenueDTO.fromJson(json as Map<String, dynamic>)).toList();
+      return (response.data as List<dynamic>).map((json) => VenueDTO.fromJson(json as Map<String, dynamic>)).toList();
     } on DioException catch (e) {
-      if (e.type == DioExceptionType.connectionError ||
-          e.type == DioExceptionType.connectionTimeout ||
-          e.type == DioExceptionType.receiveTimeout ||
-          e.type == DioExceptionType.sendTimeout) {
-        throw NetworkException(message: 'Network error: ${e.message}');
-      }
-      throw ServerException(message: 'Server error: ${e.message}', statusCode: e.response?.statusCode ?? 500);
+      _handleDioException(e);
     } catch (e) {
       throw UnknownException(message: 'Unknown error: $e');
     }
@@ -63,18 +56,18 @@ class VenueRemoteDataSourceImpl implements VenueRemoteDataSource {
   Future<VenueDTO> getVenueById(String id) async {
     try {
       final response = await apiService.get('/venues/$id');
-
       return VenueDTO.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
-      if (e.type == DioExceptionType.connectionError ||
-          e.type == DioExceptionType.connectionTimeout ||
-          e.type == DioExceptionType.receiveTimeout ||
-          e.type == DioExceptionType.sendTimeout) {
-        throw NetworkException(message: 'Network error: ${e.message}');
-      }
-      throw ServerException(message: 'Server error: ${e.message}', statusCode: e.response?.statusCode ?? 500);
+      _handleDioException(e);
     } catch (e) {
       throw UnknownException(message: 'Unknown error: $e');
     }
+  }
+
+  Never _handleDioException(DioException e) {
+    if (_networkExceptionTypes.contains(e.type)) {
+      throw NetworkException(message: 'Network error: ${e.message}');
+    }
+    throw ServerException(message: 'Server error: ${e.message}', statusCode: e.response?.statusCode ?? 500);
   }
 }

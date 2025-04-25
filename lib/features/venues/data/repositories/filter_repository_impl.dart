@@ -12,20 +12,20 @@ class FilterRepositoryImpl implements FilterRepository {
   FilterRepositoryImpl({required this.filterRemoteDataSource, required this.networkInfo});
 
   @override
-  Future<List<FilterEntity>> getFilters() async {
-    if (await networkInfo.isConnected) {
-      try {
-        final filters = await filterRemoteDataSource.getFilters();
-        return filters.map((filter) => filter.toEntity()).toList();
-      } on ServerException catch (e) {
-        throw ServerFailure(message: e.message, statusCode: e.statusCode);
-      } on NetworkException catch (e) {
-        throw NetworkFailure(message: e.message);
-      } on UnknownException catch (e) {
-        throw UnknownFailure(message: e.message);
-      }
-    } else {
-      throw NetworkFailure(message: 'No internet connection');
+  Future<List<FilterEntity>> getFilters() async => networkInfo.isConnected.then(
+    (isConnected) => isConnected ? _getRemoteFilters() : throw NetworkFailure(message: 'No internet connection'),
+  );
+
+  Future<List<FilterEntity>> _getRemoteFilters() async {
+    try {
+      final filters = await filterRemoteDataSource.getFilters();
+      return filters.map((filter) => filter.toEntity()).toList();
+    } on ServerException catch (e) {
+      throw ServerFailure(message: e.message, statusCode: e.statusCode);
+    } on NetworkException catch (e) {
+      throw NetworkFailure(message: e.message);
+    } on UnknownException catch (e) {
+      throw UnknownFailure(message: e.message);
     }
   }
 }
