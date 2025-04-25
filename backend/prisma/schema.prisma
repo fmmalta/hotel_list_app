@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
+}
+
+model Venue {
+    id            String          @id @default(uuid())
+    name          String
+    location      String
+    rating        Float
+    price         Float
+    createdAt     DateTime        @default(now())
+    overview      String
+    venueType     String
+    coordinates   Coordinates     @relation("VenueToCoordinates", fields: [coordinatesId], references: [id])
+    coordinatesId String
+    images        Image[]
+    facilities    Facility[]      @relation("FacilityToVenue")
+    activities    Activity[]      @relation("ActivityToVenue")
+    thingsToDo    ThingToDo[]
+    Category      Category?       @relation(fields: [categoryId], references: [id])
+    categoryId    String?
+    VenueCategory VenueCategory[]
+
+    categories Category[] @relation("VenueCategories")
+}
+
+model Coordinates {
+    id        String  @id @default(uuid())
+    latitude  Float
+    longitude Float
+    Venue     Venue[] @relation("VenueToCoordinates")
+}
+
+model Image {
+    id      String @id @default(uuid())
+    url     String
+    venue   Venue  @relation(fields: [venueId], references: [id])
+    venueId String
+}
+
+model Facility {
+    id     String  @id @default(uuid())
+    name   String  @unique
+    venues Venue[] @relation("FacilityToVenue")
+}
+
+model Activity {
+    id     String  @id @default(uuid())
+    name   String  @unique
+    venues Venue[] @relation("ActivityToVenue")
+}
+
+model ThingToDo {
+    id       String          @id @default(uuid())
+    title    String
+    badge    String?
+    subtitle String?
+    content  String?
+    venue    Venue           @relation(fields: [venueId], references: [id])
+    venueId  String
+    items    ThingToDoItem[]
+}
+
+model ThingToDoItem {
+    id          String    @id @default(uuid())
+    title       String?
+    imageUrl    String?
+    thingToDo   ThingToDo @relation(fields: [thingToDoId], references: [id])
+    thingToDoId String
+}
+
+model Filter {
+    id         String     @id @default(cuid())
+    name       String
+    type       String
+    categories Category[]
+}
+
+model Category {
+    id            String          @id
+    name          String
+    filterId      String
+    filter        Filter          @relation(fields: [filterId], references: [id])
+    venues        Venue[]         @relation("VenueCategories")
+    VenueCategory VenueCategory[]
+    Venue         Venue[]
+}
+
+model VenueCategory {
+    venueId    String
+    categoryId String
+
+    venue    Venue    @relation(fields: [venueId], references: [id])
+    category Category @relation(fields: [categoryId], references: [id])
+
+    @@id([venueId, categoryId])
+}
