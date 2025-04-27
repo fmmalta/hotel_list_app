@@ -31,7 +31,6 @@ extension VenueStateExtension on VenuesState {
           ? (this as VenuesLoadingMore).currentVenues.length
           : 0;
 
-  // Novos métodos de extensão
   bool get isLoading => this is VenuesLoading || this is VenuesLoadingMore;
 
   bool get hasFilters => totalFilters > 0;
@@ -81,7 +80,6 @@ extension VenueStateExtension on VenuesState {
     return null;
   }
 
-  // Analytics helpers
   Map<String, dynamic> get analyticsProperties => {
     'category': categoryName,
     'has_filters': hasFilters,

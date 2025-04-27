@@ -47,7 +47,6 @@ final appRouter = GoRouter(
       ),
 );
 
-// Placeholder para VenueDetailScreen até termos o arquivo real
 class _VenueDetailScreen extends StatelessWidget {
   final String venueId;
 
@@ -62,7 +61,6 @@ class _VenueDetailScreen extends StatelessWidget {
   }
 }
 
-// Extensão para navegação
 extension GoRouterExtension on BuildContext {
   void pushVenueDetail(String venueId) {
     GoRouter.of(this).pushNamed('venueDetail', pathParameters: {'id': venueId});
