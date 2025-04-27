@@ -254,31 +254,29 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                   onVisibilityChanged: (VisibilityInfo info) {
                     _isMapVisible = info.visibleFraction > 0.1;
                   },
-                  child: Positioned.fill(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        if (_isMapVisible) {
-                          return GoogleMap(
-                            onMapCreated: _onMapCreated,
-                            zoomControlsEnabled: false,
-                            liteModeEnabled: true,
-                            markers: {
-                              Marker(
-                                markerId: MarkerId(venue.id),
-                                position: LatLng(venue.latitude, venue.longitude),
-                                icon: BitmapDescriptor.defaultMarker,
-                              ),
-                            },
-                            initialCameraPosition: CameraPosition(
-                              target: LatLng(venue.latitude, venue.longitude),
-                              zoom: 15.0,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (_isMapVisible) {
+                        return GoogleMap(
+                          onMapCreated: _onMapCreated,
+                          zoomControlsEnabled: false,
+                          liteModeEnabled: true,
+                          markers: {
+                            Marker(
+                              markerId: MarkerId(venue.id),
+                              position: LatLng(venue.latitude, venue.longitude),
+                              icon: BitmapDescriptor.defaultMarker,
                             ),
-                          );
-                        } else {
-                          return const SizedBox.shrink();
-                        }
-                      },
-                    ),
+                          },
+                          initialCameraPosition: CameraPosition(
+                            target: LatLng(venue.latitude, venue.longitude),
+                            zoom: 15.0,
+                          ),
+                        );
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    },
                   ),
                 );
               },

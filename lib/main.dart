@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hotel_list_app/core/flavor/base_flavor.dart';
 import 'package:hotel_list_app/core/injection/dependency_injection.dart';
-import 'package:hotel_list_app/features/venues/presentation/pages/venue_screen.dart';
+import 'package:hotel_list_app/core/routes/app_router.dart';
+import 'package:hotel_list_app/core/theme/app_theme.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
@@ -16,42 +17,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Hotel List App [${BaseFlavor.name.toUpperCase()}]',
       debugShowCheckedModeBanner: false,
+      routerConfig: appRouter,
+
+      theme: AppTheme.lightTheme(),
+      darkTheme: AppTheme.darkTheme(),
+      highContrastTheme: AppTheme.highContrastLightTheme(),
+      highContrastDarkTheme: AppTheme.highContrastDarkTheme(),
 
       shortcuts: {...WidgetsApp.defaultShortcuts},
-      highContrastTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2D3C4E),
-          brightness: Brightness.light,
-          primary: const Color(0xFF1A2941),
-          onPrimary: Colors.white,
-          secondary: const Color(0xFF1A2941),
-          onSecondary: Colors.white,
-          error: Colors.red.shade800,
-          onError: Colors.white,
-        ),
-        textTheme: Typography.englishLike2021.apply(fontSizeFactor: 1.1),
-        useMaterial3: true,
-      ),
-      highContrastDarkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2D3C4E),
-          brightness: Brightness.dark,
-          primary: const Color(0xFF4D6F97),
-          onPrimary: Colors.black,
-          secondary: const Color(0xFF4D6F97),
-          onSecondary: Colors.black,
-          error: Colors.red.shade300,
-          onError: Colors.black,
-        ),
-        textTheme: Typography.englishLike2021.apply(fontSizeFactor: 1.1),
-        useMaterial3: true,
-      ),
+
       builder: (context, child) {
         final mediaQuery = MediaQuery.of(context);
-
         final textScaleFactor = mediaQuery.textScaler.clamp(minScaleFactor: 1.0, maxScaleFactor: 1.5);
 
         return MediaQuery(
@@ -59,7 +38,6 @@ class MyApp extends StatelessWidget {
           child: child!,
         );
       },
-      home: const VenueScreen(),
     );
   }
 }

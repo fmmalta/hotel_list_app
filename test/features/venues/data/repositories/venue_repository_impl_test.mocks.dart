@@ -6,8 +6,10 @@
 import 'dart:async' as _i4;
 
 import 'package:hotel_list_app/core/network/network_info.dart' as _i5;
-import 'package:hotel_list_app/features/venues/data/datasources/venue_remote_data_source.dart' as _i3;
-import 'package:hotel_list_app/features/venues/data/models/venue_dto.dart' as _i2;
+import 'package:hotel_list_app/features/venues/data/datasources/venue_remote_data_source.dart'
+    as _i3;
+import 'package:hotel_list_app/features/venues/data/models/venue_dto.dart'
+    as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -25,13 +27,15 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: subtype_of_sealed_class
 
 class _FakeVenueDTO_0 extends _i1.SmartFake implements _i2.VenueDTO {
-  _FakeVenueDTO_0(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
+  _FakeVenueDTO_0(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 /// A class which mocks [VenueRemoteDataSource].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockVenueRemoteDataSource extends _i1.Mock implements _i3.VenueRemoteDataSource {
+class MockVenueRemoteDataSource extends _i1.Mock
+    implements _i3.VenueRemoteDataSource {
   MockVenueRemoteDataSource() {
     _i1.throwOnMissingStub(this);
   }
@@ -43,11 +47,15 @@ class MockVenueRemoteDataSource extends _i1.Mock implements _i3.VenueRemoteDataS
     String? category = '',
     String? search = '',
     List<String>? facilities = const [],
-    List<String>? familyAccess = const [],
-    List<String>? guestAccess = const [],
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#getVenues, [], {#page: page, #limit: limit, #category: category, #search: search}),
+            Invocation.method(#getVenues, [], {
+              #page: page,
+              #limit: limit,
+              #category: category,
+              #search: search,
+              #facilities: facilities,
+            }),
             returnValue: _i4.Future<List<_i2.VenueDTO>>.value(<_i2.VenueDTO>[]),
           )
           as _i4.Future<List<_i2.VenueDTO>>);
@@ -56,7 +64,9 @@ class MockVenueRemoteDataSource extends _i1.Mock implements _i3.VenueRemoteDataS
   _i4.Future<_i2.VenueDTO> getVenueById(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#getVenueById, [id]),
-            returnValue: _i4.Future<_i2.VenueDTO>.value(_FakeVenueDTO_0(this, Invocation.method(#getVenueById, [id]))),
+            returnValue: _i4.Future<_i2.VenueDTO>.value(
+              _FakeVenueDTO_0(this, Invocation.method(#getVenueById, [id])),
+            ),
           )
           as _i4.Future<_i2.VenueDTO>);
 }
@@ -71,6 +81,9 @@ class MockNetworkInfo extends _i1.Mock implements _i5.NetworkInfo {
 
   @override
   _i4.Future<bool> get isConnected =>
-      (super.noSuchMethod(Invocation.getter(#isConnected), returnValue: _i4.Future<bool>.value(false))
+      (super.noSuchMethod(
+            Invocation.getter(#isConnected),
+            returnValue: _i4.Future<bool>.value(false),
+          )
           as _i4.Future<bool>);
 }

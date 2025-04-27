@@ -49,6 +49,15 @@ class MockAPIService extends _i1.Mock implements _i3.APIService {
           as String);
 
   @override
+  _i5.Future<void> setAuthToken(String? token) =>
+      (super.noSuchMethod(
+            Invocation.method(#setAuthToken, [token]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
   _i5.Future<_i2.Response<dynamic>> get(
     String? path, {
     Map<String, dynamic>? queryParameters,
