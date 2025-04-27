@@ -100,7 +100,21 @@ The backend is built with NestJS, using Prisma as an ORM for database access.
    npm install
    ```
 
-3. Run the development server:
+3. Set up the Prisma database:
+
+   Create a `.env` file in the backend directory with the following content:
+   ```
+   DATABASE_URL="file:./dev.db"
+   ```
+
+   Initialize the database with Prisma:
+   ```
+   npx prisma migrate dev --name init
+   ```
+
+   This will create the SQLite database, apply migrations, and generate the Prisma client.
+
+4. Run the development server:
    ```
    yarn start:dev
    ```
@@ -109,7 +123,7 @@ The backend is built with NestJS, using Prisma as an ORM for database access.
    npm run start:dev
    ```
 
-4. Seed the database (if needed):
+5. Seed the database (if needed):
    ```
    yarn seed
    ```
@@ -119,6 +133,13 @@ The backend is built with NestJS, using Prisma as an ORM for database access.
    ```
 
 The backend server will be available at http://localhost:3000.
+
+6. (Optional) Launch Prisma Studio to manage the database:
+   ```
+   npx prisma studio
+   ```
+
+   This will start a web interface at http://localhost:5555 where you can view and edit database records.
 
 ## Backend Architecture
 
@@ -211,7 +232,7 @@ npm run test
 | Library | Purpose |
 |---------|---------|
 | **NestJS** | Progressive Node.js framework for building server-side applications |
-| **Prisma** | Next-generation ORM for Node.js and TypeScript |
+| **Prisma** | Next-generation ORM for Node.js and TypeScript that provides type-safe database access, migrations, and a visual database management tool (Prisma Studio) |
 | **class-validator** | Validation library for TypeScript |
 | **Express** | Web application framework for Node.js |
 | **Jest** | JavaScript testing framework |
